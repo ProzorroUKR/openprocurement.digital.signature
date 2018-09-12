@@ -1,11 +1,13 @@
 import os
 import logging.config
 from json import dumps
+from hashlib import sha512
 
 from pyramid.security import Allow
 from pyramid.httpexceptions import exception_response
 
 from webob.multidict import NestedMultiDict
+from ConfigParser import ConfigParser
 
 from openprocurement.digital.signature.journal_msg_ids import API_ERROR_HANDLER
 
@@ -13,13 +15,14 @@ logger = logging.getLogger(__name__)
 
 
 SANDBOX_MODE = True if os.environ.get('SANDBOX_MODE', 'False').lower() == 'true' else False
+USERS = dict()
 
 
 class Root(object):
     __name__ = None
     __parent__ = None
     __acl__ = [
-        (Allow, 'g:platforms', 'registry')
+        (Allow, 'g:platforms', 'platform')
     ]
 
     def __init__(self, request):
@@ -75,6 +78,7 @@ def set_renderer(event):
     pretty = isinstance(json, dict) and json.get('options', {}).get('pretty') or request.params.get('opt_pretty')
     accept = request.headers.get('Accept')
     jsonp = request.params.get('opt_jsonp')
+
     if jsonp and pretty:
         request.override_renderer = 'prettyjsonp'
         return True
@@ -153,3 +157,25 @@ def forbidden(request):
         request, 403, {'location': 'url', 'name': 'permission', 'description': 'Forbidden'}
     )
     return request.response
+
+
+def read_users(filename):
+    config = ConfigParser()
+    config.read(filename)
+
+    for i in config.sections():
+        USERS.update(dict([
+            (
+                j,
+                {
+                    'password': k,
+                    'group': i
+                }
+            )
+            for j, k in config.items(i)
+        ]))
+
+
+def auth_check(username, password, request):
+    if username in USERS and USERS[username]['password'] == sha512(password).hexdigest():
+        return ['g:{}'.format(USERS[username]['group'])]

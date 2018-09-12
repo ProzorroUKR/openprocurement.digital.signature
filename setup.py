@@ -22,10 +22,6 @@ test_requires = requires + [
     'bottle'
 ]
 
-# api_requires = requires + [
-#     'pyramid_exclog'
-# ]
-
 docs_requires = requires + [
     'sphinxcontrib-httpdomain',
 ]
@@ -35,8 +31,7 @@ entry_points = {
         'main = openprocurement.digital.signature:main'
     ],
     'console_scripts': [
-        'digital_signature = openprocurement.digital.signature:main',
-        'main = openprocurement.digital.signature:main'
+        'digital_signature = openprocurement.digital.signature:main'
     ]
 }
 
@@ -62,7 +57,6 @@ setup(
     zip_safe=False,
     install_requires=requires,
     extras_require={
-        # 'api': api_requires,
         'test': test_requires,
         'docs': docs_requires,
     },
