@@ -26,11 +26,11 @@ class SignView(object):
         data = self.request.json_body
         altchars = data.get('altchars')
 
-        cp = EUSignCP(self.psz_password)
-        signature = cp.enc(altchars)
+        euscp = EUSignCP(self.psz_password)
+        signature = euscp.enc(altchars)
 
-        text = cp.dec(signature)
-        cert_info = cp.cert_info
+        text = euscp.dec(signature)
+        cert_info = euscp.cert_info
 
         body = json.dumps(
             {
@@ -44,7 +44,7 @@ class SignView(object):
                 }
             }
         )
-        cp.close()
+        euscp.close()
 
         return Response(body=body, content_type='application/json', status=200)
 

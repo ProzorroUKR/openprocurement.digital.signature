@@ -17,6 +17,7 @@ class EUSignCP(object):
 
         logger.info('EUSignCP library initialized: {}'.format(self.pIface.IsInitialized()))
 
+        self.password = password
         self.DATA_PATH = os.path.join(BASE_DIR, 'data')
 
         self.settings = dict(
@@ -33,14 +34,7 @@ class EUSignCP(object):
         self.pIface.SetFileStoreSettings(self.settings)
         self.KEY_FILE_PATH = os.path.join(self.DATA_PATH, 'Key-6.dat')
 
-        if not self.pIface.IsPrivateKeyReaded():
-            try:
-                self.pIface.ReadPrivateKeyFile(self.KEY_FILE_PATH, password, None)
-                logger.info('Private key file was successfully read')
-            except RuntimeError, e:
-                logger.error('Read private key file failed: {}'.format(e.message.decode('1251')))
-                exit()
-                raise e
+        self.read_private_key_file()
 
         logger.info('Create session...')
 
@@ -88,11 +82,26 @@ class EUSignCP(object):
     def server_session_step2(self):
         self.pIface.ServerSessionCreateStep2(self.server_session[0], self.client_data[0], len(self.client_data[0]))
 
-    def initial_session(self):
-        client_session_is_initialized = self.pIface.SessionIsInitialized(self.client_session[0])
-        server_session_is_initialized = self.pIface.SessionIsInitialized(self.server_session[0])
+    def read_private_key_file(self):
+        if not self.pIface.IsPrivateKeyReaded():
+            try:
+                self.pIface.ReadPrivateKeyFile(self.KEY_FILE_PATH, self.password, None)
+                logger.info('Private key file was successfully read')
+            except RuntimeError, e:
+                logger.error('Read private key file failed: {}'.format(e.message.decode('1251')))
+                exit()
+                raise e
 
-        if all([client_session_is_initialized, server_session_is_initialized]):
+    @property
+    def client_session_is_initialized(self):
+        return self.pIface.SessionIsInitialized(self.client_session[0])
+
+    @property
+    def server_session_is_initialized(self):
+        return self.pIface.SessionIsInitialized(self.server_session[0])
+
+    def initial_session(self):
+        if all([self.client_session_is_initialized, self.server_session_is_initialized]):
             logger.info('Session successfully created')
         else:
             logger.info('Session creation failed')
