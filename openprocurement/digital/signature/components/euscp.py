@@ -15,7 +15,9 @@ class EUSignCP(object):
     def __init__(self, password):
         self.pIface = self.initial_eucp_library
 
-        logger.info('EUSignCP library initialized: {}'.format(self.pIface.IsInitialized()))
+        logger.info(
+            'EUSignCP library initialized: {}'.format(self.pIface.IsInitialized())
+        )
 
         self.password = password
         self.DATA_PATH = os.path.join(BASE_DIR, 'data')

@@ -1,4 +1,5 @@
 import os
+import uuid
 import logging.config
 from json import dumps
 from hashlib import sha512
@@ -27,6 +28,10 @@ class Root(object):
 
     def __init__(self, request):
         self.request = request
+
+
+def uid():
+    return uuid.uuid4().hex
 
 
 def add_logging_context(event):
