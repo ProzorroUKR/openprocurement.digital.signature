@@ -9,7 +9,7 @@ from pyramid.response import Response
 
 from openprocurement.digital.signature.components.euscp import EUSignCP
 from openprocurement.digital.signature.utils import uid, context_unpack
-from openprocurement.digital.signature.journal_msg_ids import API_REQUIRED_FIELDS
+from openprocurement.digital.signature.journal_msg_ids import API_REQUIRED_FIELDS, API_INFO
 
 logger = logging.getLogger(__name__)
 
@@ -33,6 +33,11 @@ class SignView(object):
         if sign_data:
 
             euscp = EUSignCP(self.psz_password)
+
+            logger.info('Session id: {}'.format(session_id), extra=context_unpack(
+                request=self.request, msg={'MESSAGE_ID': API_INFO}
+            ))
+
             signature = euscp.enc(sign_data)
             cert_info = euscp.cert_info
 
